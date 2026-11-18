@@ -1,0 +1,15 @@
+services:
+  app:
+    build: .
+    image: should-i-buy-it:0.1.0
+    container_name: should-i-buy-it
+    restart: unless-stopped
+    ports:
+      - "${APP_BIND:-127.0.0.1}:8387:8080"
+    environment:
+      TZ: Pacific/Auckland
+      APP_DB: /data/app.sqlite3
+    volumes:
+      - ./data:/data
+    security_opt:
+      - no-new-privileges:true

@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="hero">
+  <p class="eyebrow">Deliberate spending</p>
+  <h1>Should I buy it?</h1>
+  <p class="muted">Add it, wait, then decide. You can skip anytime; buying unlocks when the wait is over.</p>
+</section>
+
+<section class="grid">
+  <article class="card"><small>Money not spent</small><div class="metric">${{ "%.2f"|format(saved) }}</div></article>
+  <article class="card"><small>Bought after waiting</small><div class="metric">${{ "%.2f"|format(spent) }}</div></article>
+  <article class="card"><small>Still cooling off</small><div class="metric">{{ waiting|length }}</div></article>
+</section>
+
+<section class="panel">
+  <h2>I want&hellip;</h2>
+  <form class="stack" method="post" action="{{ url_for('add_wish') }}">
+    <div class="row">
+      <label>Item<input name="item" maxlength="120" required placeholder="Wireless headphones"></label>
+      <label>Price<input type="number" name="price" min="0" step="0.01" required></label>
+      <label>Wait (days)<input type="number" name="wait_days" min="0" max="365" value="7"></label>
+    </div>
+    <button>Start cooling-off</button>
+  </form>
+</section>
+
+<section class="grid">
+  {% for w in waiting %}
+  <article class="card{% if w.ready %} due{% endif %}">
+    <p class="eyebrow">{% if w.ready %}Ready to decide{% else %}{{ w.remaining }} day(s) left{% endif %}</p>
+    <h2>{{ w.item }}</h2>
+    <div class="metric">${{ "%.2f"|format(w.price) }}</div>
+    <small>Added {{ w.added }} &middot; decide from {{ w.ready_on.isoformat() }}</small>
+    <div class="actions">
+      <form method="post" action="{{ url_for('decide', wish_id=w.id) }}"><input type="hidden" name="status" value="skipped"><button>Skip it</button></form>
+      {% if w.ready %}<form method="post" action="{{ url_for('decide', wish_id=w.id) }}"><input type="hidden" name="status" value="bought"><button class="quiet">I bought it</button></form>{% endif %}
+    </div>
+  </article>
+  {% endfor %}
+</section>
+
+{% if decided %}
+<section class="panel">
+  <h2>Decisions</h2>
+  <table>
+    <tr><th>Item</th><th>Price</th><th>Decision</th><th class="hide-mobile">Date</th></tr>
+    {% for w in decided %}
+    <tr><td>{{ w.item }}</td><td>${{ "%.2f"|format(w.price) }}</td><td>{{ w.status|title }}</td><td class="hide-mobile">{{ w.decided }}</td></tr>
+    {% endfor %}
+  </table>
+</section>
+{% endif %}
+{% endblock %}
