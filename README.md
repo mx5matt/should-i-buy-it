@@ -80,3 +80,6 @@ See [CHANGELOG.md](CHANGELOG.md), or the Changelog page inside the application.
 ## License
 
 MIT. See [LICENSE](LICENSE).
+
+## Dashboard candidate 0.1.1
+This staged candidate adds search, sorting, responsive layout and same-page action returns. Review and test before release.

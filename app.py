@@ -6,7 +6,7 @@ from datetime import date, timedelta
 
 from flask import Flask, abort, flash, jsonify, redirect, render_template, request, url_for
 
-APP_VERSION = "0.1.0"
+APP_VERSION = "0.1.1"
 APP_TITLE = "Should I Buy It"
 APP_INITIALS = "SB"
 DB = os.environ.get("APP_DB", "/data/app.sqlite3")
@@ -143,11 +143,11 @@ def add_wish():
     wait_days = to_int(request.form.get("wait_days", "7"))
     if not item or len(item) > 120 or price is None or not 0 <= price <= 10_000_000 or wait_days is None or not 0 <= wait_days <= 365:
         flash("Enter an item, a price of 0 or more, and a waiting period of 0 to 365 days.")
-        return redirect(url_for("index"))
+        return redirect(dashboard_return(url_for("index")))
     with db() as conn:
         conn.execute("INSERT INTO wishes(item, price, added, wait_days) VALUES (?, ?, ?, ?)",
                      (item, round(price, 2), date.today().isoformat(), wait_days))
-    return redirect(url_for("index"))
+    return redirect(dashboard_return(url_for("index")))
 
 
 @app.post("/wishes/<int:wish_id>/decide")
@@ -166,16 +166,29 @@ def decide(wish_id):
             flash(f"Still cooling off: {wish['remaining']} day(s) left before buying.")
         else:
             conn.execute("UPDATE wishes SET status = ?, decided = ? WHERE id = ?", (status, date.today().isoformat(), wish_id))
-    return redirect(url_for("index"))
+    return redirect(dashboard_return(url_for("index")))
 
 
 @app.post("/wishes/<int:wish_id>/delete")
 def delete_wish(wish_id):
     with db() as conn:
         conn.execute("DELETE FROM wishes WHERE id = ?", (wish_id,))
-    return redirect(url_for("index"))
+    return redirect(dashboard_return(url_for("index")))
 
 
 if __name__ == "__main__":
     init_db()
     app.run(host="0.0.0.0", port=8080)
+
+# Safe same-application return target. External, protocol-relative and control-character URLs are rejected.
+def dashboard_return(default='/'):
+    from urllib.parse import urlsplit
+    target = request.form.get('return_to', '')
+    if not target or not target.startswith('/') or target.startswith('//') or '\\' in target:
+        return default
+    if any(ord(c) < 32 or ord(c) == 127 for c in target):
+        return default
+    parsed = urlsplit(target)
+    if parsed.scheme or parsed.netloc or parsed.fragment or parsed.path != '/':
+        return default
+    return target

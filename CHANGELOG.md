@@ -6,6 +6,17 @@ The format is based on Keep a Changelog, and this project uses Semantic Versioni
 
 ## [Unreleased]
 
+## [0.1.1] - 2026-11-23
+
+### Added
+- Responsive dashboard search and sorting with URL persistence.
+- Same-tab, URL-scoped scroll restoration for controlled refresh.
+- Validated local dashboard return paths for POST actions.
+
+### Changed
+- Wider, compact responsive layouts and wrapping navigation.
+
+
 ## [0.1.0] - 2026-11-18
 
 ### Added

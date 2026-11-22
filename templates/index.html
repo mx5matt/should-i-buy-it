@@ -24,9 +24,9 @@
   </form>
 </section>
 
-<section class="grid">
+<section class="grid" data-dashboard-results>
   {% for w in waiting %}
-  <article class="card{% if w.ready %} due{% endif %}">
+  <article data-dashboard-item class="card{% if w.ready %} due{% endif %}">
     <p class="eyebrow">{% if w.ready %}Ready to decide{% else %}{{ w.remaining }} day(s) left{% endif %}</p>
     <h2>{{ w.item }}</h2>
     <div class="metric">${{ "%.2f"|format(w.price) }}</div>
